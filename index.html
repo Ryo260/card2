@@ -1,106 +1,137 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>お題カードメーカー</title>
-  <style>
-    body {
-      margin: 0;
-      background: #fafafa;
-      font-family: "Helvetica Neue", sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      overflow: hidden;
-    }
-    h1 {
-      font-weight: 600;
-      margin-bottom: 20px;
-    }
-    .card {
-      width: 250px;
-      height: 350px;
-      background: white;
-      border-radius: 16px;
-      box-shadow: 0 10px 20px rgba(0,0,0,0.15);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.3rem;
-      font-weight: 600;
-      position: absolute;
-      transition: transform 0.3s ease, opacity 0.3s ease;
-      user-select: none;
-    }
-    .button {
-      margin-top: 420px;
-      background: #007bff;
-      color: white;
-      padding: 10px 24px;
-      border: none;
-      border-radius: 8px;
-      font-size: 1rem;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-    .button:hover {
-      background: #0056d2;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>シチュエーションカード</title>
+
+<style>
+  body {
+    margin: 0;
+    height: 100vh;
+    background: #f8f8f8;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: "Helvetica Neue", sans-serif;
+    overflow: hidden;
+  }
+
+  .card-wrapper {
+    perspective: 1200px; /* ← 3Dカード回転の奥行き */
+  }
+
+  .card {
+    width: 260px;
+    height: 360px;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.4rem;
+    font-weight: 600;
+    transition: transform 0.6s cubic-bezier(.25,.8,.25,1);
+    backface-visibility: hidden;
+    position: relative;
+    user-select: none;
+  }
+
+  /* 裏側 */
+  .card-back {
+    position: absolute;
+    background: white;
+    width: 100%;
+    height: 100%;
+    border-radius: 20px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+    backface-visibility: hidden;
+    transform: rotateY(180deg);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.7rem;
+    font-weight: 700;
+  }
+
+  .flipped {
+    transform: rotateY(180deg);
+  }
+
+  #nextBtn {
+    margin-top: 420px;
+    position: absolute;
+    background: #007bff;
+    color: white;
+    padding: 12px 26px;
+    border-radius: 10px;
+    border: none;
+    font-size: 1.1rem;
+    display: none;
+  }
+</style>
+
 </head>
 <body>
-  <h1>シチュエーションカード</h1>
-  <div id="card" class="card">シチュエーション</div>
-  <button id="nextBtn" class="button" style="display:none;">出来事カードを選ぶ</button>
 
-  <script>
-    const card = document.getElementById("card");
-    const btn = document.getElementById("nextBtn");
+<div class="card-wrapper">
+  <div id="card" class="card">
+    <div>タップ or スワイプでめくる</div>
+    <div id="back" class="card-back"></div>
+  </div>
+</div>
 
-    const situations = ["学生", "海", "キャンプ", "就活", "文化祭前日", "未来の街"];
+<button id="nextBtn">出来事カードへ</button>
 
-    let isFlipped = false;
-    let startX = 0, startY = 0;
+<script>
+const card = document.getElementById("card");
+const back = document.getElementById("back");
+const nextBtn = document.getElementById("nextBtn");
 
-    function randomSituation() {
-      return situations[Math.floor(Math.random() * situations.length)];
-    }
+const situations = ["学生", "海", "キャンプ", "就活", "未来都市", "文化祭前日"];
+let flipped = false;
+let startX = 0;
 
-    card.addEventListener("touchstart", (e) => {
-      startX = e.touches[0].clientX;
-      startY = e.touches[0].clientY;
-    });
+// スワイプ開始位置を取得
+card.addEventListener("touchstart", (e) => {
+  startX = e.touches[0].clientX;
+});
 
-    card.addEventListener("touchend", (e) => {
-      const endX = e.changedTouches[0].clientX;
-      const endY = e.changedTouches[0].clientY;
-      const diffX = endX - startX;
-      const diffY = endY - startY;
-      const distance = Math.sqrt(diffX * diffX + diffY * diffY);
+// めくり処理
+card.addEventListener("touchend", (e) => {
+  if (flipped) return;
 
-      if (distance > 50 && !isFlipped) {
-        isFlipped = true;
-        const direction = Math.abs(diffX) > Math.abs(diffY)
-          ? (diffX > 0 ? "translateX(200px)" : "translateX(-200px)")
-          : (diffY > 0 ? "translateY(200px)" : "translateY(-200px)");
-        card.style.transform = direction + " rotate(15deg)";
-        setTimeout(() => {
-          card.textContent = randomSituation();
-          card.style.transform = "scale(1.1)";
-          setTimeout(() => {
-            card.style.transform = "scale(1)";
-            btn.style.display = "block";
-          }, 300);
-        }, 300);
-      }
-    });
+  const endX = e.changedTouches[0].clientX;
+  if (Math.abs(endX - startX) < 40) return;
 
-    btn.addEventListener("click", () => {
-      window.location.href = "event.html"; // 出来事カード画面へ
-    });
-  </script>
+  flipCard();
+});
+
+// クリックでもめくれる
+card.addEventListener("click", () => {
+  if (!flipped) flipCard();
+});
+
+function flipCard() {
+  flipped = true;
+
+  // 裏側にランダム文字セット
+  back.textContent = situations[Math.floor(Math.random() * situations.length)];
+
+  // カード回転！
+  card.classList.add("flipped");
+
+  // ボタンをちょっと遅れて表示
+  setTimeout(() => {
+    nextBtn.style.display = "block";
+  }, 600);
+}
+
+nextBtn.addEventListener("click", () => {
+  window.location.href = "event.html";
+});
+</script>
+
 </body>
 </html>
