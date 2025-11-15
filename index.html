@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>お題カードメーカー</title>
+  <style>
+    body {
+      margin: 0;
+      background: #fafafa;
+      font-family: "Helvetica Neue", sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      overflow: hidden;
+    }
+    h1 {
+      font-weight: 600;
+      margin-bottom: 20px;
+    }
+    .card {
+      width: 250px;
+      height: 350px;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      font-weight: 600;
+      position: absolute;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+      user-select: none;
+    }
+    .button {
+      margin-top: 420px;
+      background: #007bff;
+      color: white;
+      padding: 10px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .button:hover {
+      background: #0056d2;
+    }
+  </style>
+</head>
+<body>
+  <h1>シチュエーションカード</h1>
+  <div id="card" class="card">シチュエーション</div>
+  <button id="nextBtn" class="button" style="display:none;">出来事カードを選ぶ</button>
+
+  <script>
+    const card = document.getElementById("card");
+    const btn = document.getElementById("nextBtn");
+
+    const situations = ["学生", "海", "キャンプ", "就活", "文化祭前日", "未来の街"];
+
+    let isFlipped = false;
+    let startX = 0, startY = 0;
+
+    function randomSituation() {
+      return situations[Math.floor(Math.random() * situations.length)];
+    }
+
+    card.addEventListener("touchstart", (e) => {
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+    });
+
+    card.addEventListener("touchend", (e) => {
+      const endX = e.changedTouches[0].clientX;
+      const endY = e.changedTouches[0].clientY;
+      const diffX = endX - startX;
+      const diffY = endY - startY;
+      const distance = Math.sqrt(diffX * diffX + diffY * diffY);
+
+      if (distance > 50 && !isFlipped) {
+        isFlipped = true;
+        const direction = Math.abs(diffX) > Math.abs(diffY)
+          ? (diffX > 0 ? "translateX(200px)" : "translateX(-200px)")
+          : (diffY > 0 ? "translateY(200px)" : "translateY(-200px)");
+        card.style.transform = direction + " rotate(15deg)";
+        setTimeout(() => {
+          card.textContent = randomSituation();
+          card.style.transform = "scale(1.1)";
+          setTimeout(() => {
+            card.style.transform = "scale(1)";
+            btn.style.display = "block";
+          }, 300);
+        }, 300);
+      }
+    });
+
+    btn.addEventListener("click", () => {
+      window.location.href = "event.html"; // 出来事カード画面へ
+    });
+  </script>
+</body>
+</html>

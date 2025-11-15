@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>出来事カード</title>
+  <style>
+    body {
+      margin: 0;
+      background: #f5f5f5;
+      font-family: "Helvetica Neue", sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      overflow: hidden;
+    }
+    h1 {
+      margin-bottom: 30px;
+      font-weight: 600;
+    }
+    .cards {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+      max-width: 90%;
+    }
+    .card {
+      width: 140px;
+      height: 200px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      font-weight: 600;
+      transition: transform 0.4s ease, opacity 0.3s ease;
+      user-select: none;
+      position: relative;
+    }
+    .button {
+      margin-top: 30px;
+      background: #007bff;
+      color: white;
+      padding: 10px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+      display: none;
+    }
+    .button:hover {
+      background: #0056d2;
+    }
+  </style>
+</head>
+<body>
+  <h1>出来事カード</h1>
+  <div class="cards" id="cards"></div>
+  <button id="resultBtn" class="button">結果を見る</button>
+
+  <script>
+    const container = document.getElementById("cards");
+    const resultBtn = document.getElementById("resultBtn");
+
+    // 人数分カードを生成（必要に応じて人数変更）
+    const playerCount = 3;
+    const events = [
+      "運命の出会い", "忘れもの", "戦う", "秘密がバレる",
+      "再会", "手紙を書く", "夢が叶う", "裏切り", "挑戦する", "AIが暴走する"
+    ];
+
+    let flippedCount = 0;
+
+    for (let i = 0; i < playerCount; i++) {
+      const card = document.createElement("div");
+      card.className = "card";
+      card.textContent = "出来事";
+      container.appendChild(card);
+
+      let startX = 0, startY = 0, flipped = false;
+
+      card.addEventListener("touchstart", (e) => {
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+      });
+
+      card.addEventListener("touchend", (e) => {
+        const endX = e.changedTouches[0].clientX;
+        const endY = e.changedTouches[0].clientY;
+        const diffX = endX - startX;
+        const diffY = endY - startY;
+        const distance = Math.sqrt(diffX*diffX + diffY*diffY);
+
+        if (distance > 40 && !flipped) {
+          flipped = true;
+          flippedCount++;
+          const direction =
+            Math.abs(diffX) > Math.abs(diffY)
+              ? (diffX > 0 ? "translateX(120px)" : "translateX(-120px)")
+              : (diffY > 0 ? "translateY(120px)" : "translateY(-120px)");
+
+          card.style.transform = direction + " rotate(10deg)";
+          setTimeout(() => {
+            card.textContent = events[Math.floor(Math.random() * events.length)];
+            card.style.transform = "scale(1.1)";
+            setTimeout(() => {
+              card.style.transform = "scale(1)";
+              if (flippedCount === playerCount) {
+                resultBtn.style.display = "block";
+              }
+            }, 300);
+          }, 300);
+        }
+      });
+    }
+
+    resultBtn.addEventListener("click", () => {
+      alert("全員のお題が決まりました！");
+      // → ここで結果ページに遷移してもOK
+      // window.location.href = "result.html";
+    });
+  </script>
+</body>
+</html>
