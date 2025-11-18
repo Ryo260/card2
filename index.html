@@ -106,7 +106,10 @@ const card = document.getElementById("card");
 const back = document.getElementById("back");
 const nextBtn = document.getElementById("nextBtn");
 
+// シチュエーションの配列
 const situations = ["学生", "海", "キャンプ", "就活", "未来都市", "文化祭前日"];
+console.log("Situations array:", situations); // 配列の中身を確認
+
 let flipped = false;
 let startX = 0;
 
@@ -134,7 +137,11 @@ function flipCard() {
   flipped = true;
 
   // 裏側にランダム文字セット
-  back.textContent = situations[Math.floor(Math.random() * situations.length)];
+  if (situations.length > 0) {
+    back.textContent = situations[Math.floor(Math.random() * situations.length)];
+  } else {
+    back.textContent = "No situations available"; // エラー回避用のデフォルトメッセージ
+  }
 
   // カード回転！
   card.classList.add("flipped");
